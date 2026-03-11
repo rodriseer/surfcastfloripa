@@ -546,17 +546,36 @@ function renderTimelineToday(spot, hoursToday) {
     row.innerHTML = `<div class="spot-timeline-empty">Linha do tempo em atualização...</div>`;
     return;
   }
-  hoursToday.forEach((slot) => {
-    const rating = computeSurfScore(spot, slot);
+
+  const scored = hoursToday.map((slot) => ({
+    slot,
+    rating: computeSurfScore(spot, slot),
+  }));
+
+  let best = null;
+  scored.forEach((s) => {
+    if (!best || s.rating.score > best.rating.score) best = s;
+  });
+
+  scored.forEach((item) => {
+    const { slot, rating } = item;
     const d = new Date(slot.time);
     const h = d.getHours().toString().padStart(2, "0");
+    const tier = tierFromScore(rating.score);
+    const height = 20 + (rating.score / 10) * 70; // 20–90px
+    const isBest = best && rating.score === best.rating.score;
     const el = document.createElement("div");
-    el.className = "spot-timeline-slot";
+    el.className = `spot-timeline-bar score-${tier} ${
+      isBest ? "spot-timeline-bar-best" : ""
+    }`;
+    el.title = `Altura: ${formatWaveHeight(slot.waveHeight)}\nVento: ${formatWind(
+      slot.windSpeed,
+      slot.windDirection
+    )}`;
     el.innerHTML = `
-      <span class="spot-timeline-time">${h}h</span>
       <span class="spot-timeline-score">${rating.score.toFixed(1)}</span>
-      <span class="spot-timeline-time">${formatWaveHeight(slot.waveHeight)}</span>
-      <span class="spot-timeline-time">${formatWind(slot.windSpeed, slot.windDirection)}</span>
+      <div class="spot-timeline-bar-fill" style="height:${height}px"></div>
+      <span class="spot-timeline-time">${h}h</span>
     `;
     row.appendChild(el);
   });
