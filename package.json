@@ -1,0 +1,13 @@
+{
+  "name": "surfseer-floripa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SurfSeer Floripa - previsões de surf premium para Florianópolis, Brasil.",
+  "scripts": {
+    "start": "npx serve .",
+    "lint": "echo \"No linter configurado\""
+  },
+  "devDependencies": {
+    "serve": "^14.2.6"
+  }
+}

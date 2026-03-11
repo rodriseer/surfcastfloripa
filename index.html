@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SurfSeer Floripa - Previsão de surf em Florianópolis</title>
+    <meta
+      name="description"
+      content="SurfSeer Floripa - Previsão de surf premium para os principais picos de Florianópolis: ondas, vento, maré e condição do mar em um só lugar."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="page">
+      <header class="site-header">
+        <div class="container header-inner">
+          <div class="brand">
+            <div class="brand-mark">S</div>
+            <div class="brand-text">
+              <span class="brand-name">SurfSeer</span>
+              <span class="brand-sub">Floripa</span>
+            </div>
+          </div>
+          <nav class="nav">
+            <a href="#hoje" class="nav-link">Hoje</a>
+            <a href="#picos" class="nav-link">Picos</a>
+            <a href="#por-que" class="nav-link">Por que usar</a>
+          </nav>
+          <button class="nav-cta">Entrar em breve</button>
+        </div>
+      </header>
+
+      <main>
+        <!-- Hero -->
+        <section class="hero">
+          <div class="hero-bg"></div>
+          <div class="hero-overlay"></div>
+          <div class="container hero-inner">
+            <div class="hero-content">
+              <p class="hero-kicker">SurfSeer Floripa</p>
+              <h1 class="hero-title">Previsão de surf em Florianópolis</h1>
+              <p class="hero-subtitle">
+                Ondas, vento, maré e condição do mar nos principais picos de Floripa.
+                Um painel premium para você decidir onde e quando entrar na água.
+              </p>
+              <div class="hero-actions">
+                <button class="btn btn-primary" data-scroll-target="#hoje">
+                  Ver previsão
+                </button>
+                <button class="btn btn-ghost" data-scroll-target="#picos">
+                  Explorar picos
+                </button>
+              </div>
+              <div class="hero-metas">
+                <div class="hero-meta">
+                  <span class="hero-meta-label">Picos monitorados</span>
+                  <span class="hero-meta-value">7 praias de Floripa</span>
+                </div>
+                <div class="hero-meta">
+                  <span class="hero-meta-label">Foco</span>
+                  <span class="hero-meta-value">Condição real de surf</span>
+                </div>
+                <div class="hero-meta">
+                  <span class="hero-meta-label">Dados</span>
+                  <span class="hero-meta-value">Temp. água, vento e mais</span>
+                </div>
+              </div>
+            </div>
+            <aside class="hero-panel" aria-label="Resumo rápido de hoje">
+              <div class="glass-panel hero-panel-inner">
+                <p class="panel-title">Resumo rápido de hoje</p>
+                <p class="panel-location">Florianópolis, SC</p>
+                <div class="panel-rows" id="hero-summary">
+                  <div class="panel-row skeleton">
+                    <span>Carregando condições...</span>
+                  </div>
+                </div>
+                <p class="panel-footnote">
+                  Dados de previsão marítima integrados à API Stormglass.*
+                </p>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <!-- Condições de hoje -->
+        <section id="hoje" class="section section-today">
+          <div class="container">
+            <header class="section-header">
+              <h2>Condições de hoje em Floripa</h2>
+              <p>
+                As melhores condições costumam aparecer pela manhã, com vento mais fraco e
+                ondas mais organizadas nas praias expostas ao leste.
+                Use o painel abaixo para decidir se vale acordar cedo ou esperar a maré virar.
+              </p>
+            </header>
+            <div class="today-grid">
+              <div class="glass-panel today-main">
+                <h3>Visão geral do dia</h3>
+                <p id="today-summary-text">
+                  Atualizando leitura das condições do mar em tempo quase real para os picos
+                  principais de Florianópolis.
+                </p>
+                <dl class="today-metrics" id="today-metrics">
+                  <!-- preenchido via JS -->
+                </dl>
+              </div>
+              <div class="glass-panel today-secondary">
+                <h3>Dicas rápidas de leitura</h3>
+                <ul class="tips-list">
+                  <li>
+                    <span class="tip-label">Altura das ondas</span>
+                    <span class="tip-text">
+                      Para um surf mais divertido e controlado, procure janelas entre
+                      0,8 m e 1,5 m, dependendo do seu nível.
+                    </span>
+                  </li>
+                  <li>
+                    <span class="tip-label">Vento</span>
+                    <span class="tip-text">
+                      Ventos fracos ou terral deixam a superfície do mar mais lisa e as ondas
+                      mais alinhadas.
+                    </span>
+                  </li>
+                  <li>
+                    <span class="tip-label">Maré</span>
+                    <span class="tip-text">
+                      Alguns picos funcionam melhor enchendo, outros secando.
+                      Experimente observar como cada praia reage.
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Picos -->
+        <section id="picos" class="section section-spots">
+          <div class="container">
+            <header class="section-header">
+              <h2>Principais picos de surf em Florianópolis</h2>
+              <p>
+                Acompanhe em um só lugar a leitura rápida de cada pico: altura das ondas,
+                vento, maré, condição do surf e melhor horário sugerido.
+              </p>
+            </header>
+
+            <div class="spots-grid" id="spots-grid">
+              <!-- Cards de picos preenchidos via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Por que usar -->
+        <section id="por-que" class="section section-why">
+          <div class="container why-grid">
+            <div class="why-text">
+              <h2>Por que usar o SurfSeer Floripa?</h2>
+              <p>
+                O SurfSeer Floripa foi pensado para quem mora, surfa ou visita a ilha e quer
+                decidir rápido onde cair sem ficar pulando entre vários apps, mapas e
+                previsões diferentes.
+              </p>
+              <ul class="why-list">
+                <li>
+                  <span class="why-label">Foco em Florianópolis</span>
+                  <span class="why-text-item">
+                    Nada de previsões genéricas. O painel é desenhado em torno dos picos
+                    clássicos da ilha.
+                  </span>
+                </li>
+                <li>
+                  <span class="why-label">Leitura em segundos</span>
+                  <span class="why-text-item">
+                    Em vez de dezenas de gráficos, você vê uma síntese visual e um
+                    “score” de condição do surf por pico.
+                  </span>
+                </li>
+                <li>
+                  <span class="why-label">Interface premium</span>
+                  <span class="why-text-item">
+                    Layout limpo, escuro e imersivo, pensado para ser usado tanto no celular
+                    na beira da praia quanto no desktop.
+                  </span>
+                </li>
+                <li>
+                  <span class="why-label">Baseado em dados</span>
+                  <span class="why-text-item">
+                    Integração com API marítima (Stormglass) trazendo altura de onda,
+                    vento, direção de swell, maré e temperatura da água.
+                  </span>
+                </li>
+              </ul>
+            </div>
+            <aside class="why-panel">
+              <div class="glass-panel why-panel-inner">
+                <p class="panel-title">Pensado para o próximo drop</p>
+                <p>
+                  Customize o horário, o pico e o tipo de condição que funciona melhor
+                  para o seu nível. A ideia é que, em poucos toques, você saiba:
+                  <strong>vale a remada ou melhor esperar?</strong>
+                </p>
+                <p class="panel-footnote">
+                  Versão inicial focada em leitura rápida.
+                  Em breve: alertas inteligentes, favoritos e personalização por nível.
+                </p>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <div class="container footer-inner">
+          <div class="footer-brand">
+            <span class="footer-logo">SurfSeer Floripa</span>
+            <span class="footer-tagline">Previsão de surf feita para a ilha.</span>
+          </div>
+          <nav class="footer-nav">
+            <a href="#hoje">Condições de hoje</a>
+            <a href="#picos">Picos monitorados</a>
+            <a href="#por-que">Sobre o projeto</a>
+          </nav>
+          <div class="footer-meta">
+            <span>Protótipo de experiência de previsão premium.</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
+
