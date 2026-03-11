@@ -352,7 +352,8 @@ function formatWind(speed, direction) {
   if (direction == null) return label;
   const dirs = ["N", "NE", "L", "SE", "S", "SO", "O", "NO"];
   const index = Math.round(direction / 45) % 8;
-  return `${label} ${dirs[index]}`;
+  const arrow = `<span class="wind-arrow" style="transform: rotate(${direction}deg)">↑</span>`;
+  return `${arrow} ${label} ${dirs[index]}`;
 }
 
 function formatTemp(temp) {
@@ -385,6 +386,83 @@ function surfConditionText(rating) {
   return "Pouco convidativo, indicado apenas para treinos específicos ou para matar a vontade.";
 }
 
+function formatSwell(entry) {
+  if (entry.waveHeight == null && entry.swellPeriod == null && entry.swellDirection == null) {
+    return "—";
+  }
+  const h = entry.waveHeight != null ? `${entry.waveHeight.toFixed(1)} m` : "";
+  const p = entry.swellPeriod != null ? `${Math.round(entry.swellPeriod)} s` : "";
+  let dirText = "";
+  if (entry.swellDirection != null) {
+    const dirs = ["N", "NE", "L", "SE", "S", "SO", "O", "NO"];
+    const index = Math.round(entry.swellDirection / 45) % 8;
+    dirText = dirs[index];
+  }
+  const parts = [h, p, dirText].filter(Boolean);
+  return parts.join(" @ ").replace(" @ @", " @");
+}
+
+function renderBestSpot(results) {
+  const container = document.getElementById("best-spot-card");
+  const subtitle = document.getElementById("best-spot-subtitle");
+  if (!container || !subtitle || !results.length) return;
+
+  let best = null;
+
+  results.forEach((entry) => {
+    const ratingNow = computeSurfScore(entry.spot, entry);
+    let maxScore = ratingNow.score;
+    let bestTime = null;
+
+    if (Array.isArray(entry.timeline) && entry.timeline.length) {
+      entry.timeline.forEach((slot) => {
+        const r = computeSurfScore(entry.spot, slot);
+        if (r.score > maxScore) {
+          maxScore = r.score;
+          bestTime = slot.time;
+        }
+      });
+    }
+
+    if (!best || maxScore > best.maxScore) {
+      best = { entry, maxScore, bestTime, rating: ratingNow };
+    }
+  });
+
+  if (!best) return;
+
+  const { entry, maxScore, bestTime } = best;
+  const rating = computeSurfScore(entry.spot, entry);
+  let timeLabel = "ao longo do dia";
+  if (bestTime) {
+    const d = new Date(bestTime);
+    const h = d.getHours().toString().padStart(2, "0");
+    timeLabel = `por volta de ${h}h`;
+  }
+
+  subtitle.textContent =
+    "Resumo do pico com melhor combinação de ondas, vento e swell entre os monitorados hoje.";
+
+  container.innerHTML = `
+    <div class="glass-panel best-spot-panel">
+      <div class="best-spot-header">
+        <span class="best-spot-label">Melhor pico hoje</span>
+        <div class="spot-score-pill score-${rating.tier}">
+          <div class="spot-score-main">${maxScore.toFixed(1)} / 10</div>
+          <div class="spot-score-label">${labelFromScore(maxScore)}</div>
+        </div>
+      </div>
+      <div class="best-spot-body">
+        <h3 class="best-spot-name">${entry.spot.name}</h3>
+        <p class="best-spot-reason">
+          ${entry.spot.orientation} recebendo swell compatível, vento dentro da janela aceitável
+          e altura de onda dentro da faixa ideal, com melhores condições ${timeLabel}.
+        </p>
+      </div>
+    </div>
+  `;
+}
+
 async function fetchSpotConditions(spot) {
   try {
     const res = await fetch(`/api/surf?lat=${encodeURIComponent(
@@ -406,7 +484,8 @@ async function fetchSpotConditions(spot) {
       waterTemperature: data.waterTemperature ?? null,
       swellDirection: data.swellDirection ?? null,
       swellPeriod: data.swellPeriod ?? null,
-      tide: "Dados de maré em breve",
+      timeline: Array.isArray(data.timeline) ? data.timeline : [],
+      tide: null,
     };
   } catch (err) {
     console.error("Falha ao buscar previsão para o pico", spot.name, err);
@@ -414,6 +493,19 @@ async function fetchSpotConditions(spot) {
     // Fallback suave para manter a UI utilizável mesmo sem backend
     const now = new Date();
     const base = 0.8 + 0.6 * Math.sin(now.getHours() / 24);
+    const timeline = [];
+    for (let i = 0; i < 5; i += 1) {
+      timeline.push({
+        time: new Date(Date.now() + i * 3 * 60 * 60 * 1000).toISOString(),
+        waveHeight: base + (Math.random() - 0.5) * 0.2,
+        windSpeed: 6 + 4 * Math.random(),
+        windDirection: 90,
+        waterTemperature: 23 + Math.random() * 2,
+        swellDirection: 100,
+        swellPeriod: 10 + Math.random() * 2,
+      });
+    }
+
     return {
       spot,
       waveHeight: base,
@@ -422,7 +514,8 @@ async function fetchSpotConditions(spot) {
       waterTemperature: 23 + Math.random() * 2,
       swellDirection: 100,
       swellPeriod: 10 + Math.random() * 2,
-      tide: "Meia maré enchendo",
+      timeline,
+      tide: null,
     };
   }
 }
@@ -517,6 +610,19 @@ function renderSpots(results) {
 
   results.forEach((entry) => {
     const rating = computeSurfScore(entry.spot, entry);
+
+    const timeline = Array.isArray(entry.timeline) ? entry.timeline : [];
+    const timelineWithScores = timeline.map((slot) => {
+      const slotRating = computeSurfScore(entry.spot, slot);
+      return { ...slot, rating: slotRating };
+    });
+
+    let bestSlot = null;
+    timelineWithScores.forEach((slot) => {
+      if (!bestSlot || slot.rating.score > bestSlot.rating.score) {
+        bestSlot = slot;
+      }
+    });
     const el = document.createElement("article");
     el.className = "spot-card";
     el.innerHTML = `
@@ -528,11 +634,38 @@ function renderSpots(results) {
             <h3 class="spot-name">${entry.spot.name}</h3>
             <span class="spot-badge">${entry.spot.orientation}</span>
           </div>
-          <div class="spot-score-pill score-${rating.tier}">
+          <div class="spot-score-pill score-${rating.tier}" title="Score calculado a partir de altura de onda, vento, swell, período e orientação do pico.">
             <div class="spot-score-main">${rating.score.toFixed(1)} / 10</div>
             <div class="spot-score-label">${rating.label}</div>
           </div>
         </header>
+        <div class="spot-timeline">
+          <div class="spot-timeline-label">Hoje</div>
+          <div class="spot-timeline-row">
+            ${
+              timelineWithScores.length
+                ? timelineWithScores
+                    .map((slot) => {
+                      const d = new Date(slot.time);
+                      const h = d.getHours().toString().padStart(2, "0");
+                      const isBest =
+                        bestSlot && slot.rating.score === bestSlot.rating.score;
+                      return `
+                        <div class="spot-timeline-slot ${
+                          isBest ? "spot-timeline-slot-best" : ""
+                        }">
+                          <span class="spot-timeline-time">${h}h</span>
+                          <span class="spot-timeline-score">${slot.rating.score.toFixed(
+                            1
+                          )}</span>
+                        </div>
+                      `;
+                    })
+                    .join("")
+                : `<div class="spot-timeline-empty">Linha do tempo em atualização...</div>`
+            }
+          </div>
+        </div>
         <div class="spot-grid">
           <div>
             <span class="spot-metric-label">Altura das ondas</span>
@@ -546,12 +679,14 @@ function renderSpots(results) {
             )}</span>
           </div>
           <div>
-            <span class="spot-metric-label">Maré</span>
-            <span class="spot-metric-value">${entry.tide ?? "Em breve"}</span>
+            <span class="spot-metric-label">Swell</span>
+            <span class="spot-metric-value">${formatSwell(entry)}</span>
           </div>
           <div>
-            <span class="spot-metric-label">Melhor horário</span>
-            <span class="spot-metric-value">${bestTimeFromWind(entry.windSpeed)}</span>
+            <span class="spot-metric-label">Maré</span>
+            <span class="spot-metric-value">${
+              entry.tide ?? "Sem dados de maré ainda"
+            }</span>
           </div>
         </div>
         <p class="spot-footer">
@@ -568,6 +703,7 @@ async function loadForecast() {
     const promises = spots.map((spot) => fetchSpotConditions(spot));
     const results = await Promise.all(promises);
 
+    renderBestSpot(results);
     renderTodayOverview(results);
     renderSpots(results);
   } catch (err) {

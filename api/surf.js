@@ -54,7 +54,22 @@ module.exports = async (req, res) => {
     }
 
     const data = await response.json();
-    const first = data.hours?.[0] ?? {};
+    const hours = data.hours || [];
+    const first = hours[0] || {};
+
+    const timelineIndices = [0, 3, 6, 9, 12].filter((i) => i < hours.length);
+    const timeline = timelineIndices.map((i) => {
+      const h = hours[i] || {};
+      return {
+        time: h.time,
+        waveHeight: h.waveHeight?.noaa ?? null,
+        windSpeed: h.windSpeed?.noaa ?? null,
+        windDirection: h.windDirection?.noaa ?? null,
+        waterTemperature: h.waterTemperature?.noaa ?? null,
+        swellDirection: h.swellDirection?.noaa ?? null,
+        swellPeriod: h.swellPeriod?.noaa ?? null,
+      };
+    });
 
     const payload = {
       waveHeight: first.waveHeight?.noaa ?? null,
@@ -63,6 +78,7 @@ module.exports = async (req, res) => {
       waterTemperature: first.waterTemperature?.noaa ?? null,
       swellDirection: first.swellDirection?.noaa ?? null,
       swellPeriod: first.swellPeriod?.noaa ?? null,
+      timeline,
     };
 
     res.status(200).json(payload);
