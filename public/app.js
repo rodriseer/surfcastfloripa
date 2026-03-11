@@ -78,50 +78,65 @@ document.querySelectorAll("[data-scroll-target]").forEach((btn) => {
 const spotConfigs = {
   joaquina: {
     id: "joaquina",
-    idealWave: { min: 0.6, max: 2.2, sweetMin: 0.9, sweetMax: 1.8 },
-    idealSwellDir: { min: 80, max: 150 },
+    // Praia de face leste / sudeste
+    beachOrientation: 110,
+    idealWave: { min: 0.6, max: 2.4, sweetMin: 0.9, sweetMax: 1.8 },
+    idealSwellDir: { min: 110, max: 150 }, // SE / ESE
+    idealOffshoreWindDir: { min: 250, max: 310 }, // W / WNW
     idealWindSpeed: { max: 9 },
     idealPeriod: { min: 9, sweet: 12 },
   },
   mole: {
     id: "mole",
-    idealWave: { min: 0.6, max: 2.0, sweetMin: 0.8, sweetMax: 1.6 },
-    idealSwellDir: { min: 80, max: 140 },
+    beachOrientation: 100,
+    idealWave: { min: 0.6, max: 2.1, sweetMin: 0.8, sweetMax: 1.7 },
+    idealSwellDir: { min: 90, max: 140 }, // E / SE
+    idealOffshoreWindDir: { min: 260, max: 320 }, // W / WNW
     idealWindSpeed: { max: 10 },
     idealPeriod: { min: 9, sweet: 11 },
   },
   campeche: {
     id: "campeche",
-    idealWave: { min: 0.8, max: 2.5, sweetMin: 1.0, sweetMax: 2.0 },
-    idealSwellDir: { min: 90, max: 160 },
+    beachOrientation: 120,
+    idealWave: { min: 0.8, max: 2.7, sweetMin: 1.0, sweetMax: 2.1 },
+    idealSwellDir: { min: 120, max: 160 }, // SE
+    idealOffshoreWindDir: { min: 260, max: 320 },
     idealWindSpeed: { max: 10 },
     idealPeriod: { min: 9, sweet: 12 },
   },
   barra: {
     id: "barra",
-    idealWave: { min: 0.5, max: 1.8, sweetMin: 0.7, sweetMax: 1.4 },
+    beachOrientation: 85,
+    idealWave: { min: 0.5, max: 1.9, sweetMin: 0.7, sweetMax: 1.3 },
     idealSwellDir: { min: 70, max: 130 },
+    idealOffshoreWindDir: { min: 250, max: 310 },
     idealWindSpeed: { max: 9 },
     idealPeriod: { min: 8, sweet: 10 },
   },
   mocambique: {
     id: "mocambique",
-    idealWave: { min: 0.8, max: 2.5, sweetMin: 1.1, sweetMax: 2.1 },
-    idealSwellDir: { min: 60, max: 130 },
+    beachOrientation: 70,
+    idealWave: { min: 0.8, max: 2.8, sweetMin: 1.1, sweetMax: 2.2 },
+    idealSwellDir: { min: 50, max: 110 }, // NE / E
+    idealOffshoreWindDir: { min: 240, max: 300 },
     idealWindSpeed: { max: 11 },
     idealPeriod: { min: 9, sweet: 12 },
   },
   brava: {
     id: "brava",
-    idealWave: { min: 0.8, max: 2.4, sweetMin: 1.0, sweetMax: 1.9 },
-    idealSwellDir: { min: 40, max: 120 },
+    beachOrientation: 60,
+    idealWave: { min: 0.8, max: 2.6, sweetMin: 1.0, sweetMax: 2.0 },
+    idealSwellDir: { min: 40, max: 110 }, // NE / E
+    idealOffshoreWindDir: { min: 230, max: 290 },
     idealWindSpeed: { max: 10 },
     idealPeriod: { min: 9, sweet: 12 },
   },
   ingleses: {
     id: "ingleses",
-    idealWave: { min: 0.6, max: 2.0, sweetMin: 0.8, sweetMax: 1.6 },
-    idealSwellDir: { min: 40, max: 110 },
+    beachOrientation: 50,
+    idealWave: { min: 0.6, max: 2.1, sweetMin: 0.8, sweetMax: 1.6 },
+    idealSwellDir: { min: 40, max: 110 }, // NE / E
+    idealOffshoreWindDir: { min: 230, max: 290 },
     idealWindSpeed: { max: 10 },
     idealPeriod: { min: 8, sweet: 11 },
   },
@@ -164,70 +179,166 @@ function tierFromScore(score) {
   return "ruim";
 }
 
+function angleDiff(a, b) {
+  if (a == null || b == null) return null;
+  let d = Math.abs(a - b) % 360;
+  if (d > 180) d = 360 - d;
+  return d;
+}
+
 function computeSurfScore(spot, conditions) {
   const cfg = spotConfigs[spot.id] || spotConfigs.joaquina;
-  let score = 5; // ponto neutro
+  const {
+    waveHeight,
+    windSpeed,
+    windDirection,
+    swellDirection,
+    swellPeriod,
+  } = conditions;
 
-  const { waveHeight, windSpeed, swellDirection, swellPeriod } = conditions;
+  // Sub-scores normalizados [0,1]
+  let waveScore = 0.4; // ponto de partida neutro
+  let windScore = 0.5;
+  let swellDirScore = 0.5;
+  let periodScore = 0.5;
+  let tideScore = 0.5; // fallback simples por enquanto
 
-  // Altura de onda
+  // 1) Qualidade da onda (altura) – 35%
   if (waveHeight != null) {
     const h = waveHeight;
     const { min, max, sweetMin, sweetMax } = cfg.idealWave;
-    if (h < min || h > max) {
-      score -= 2;
+
+    if (h < 0.4 || h > 3.0) {
+      // muito pequeno ou muito grande: quase zerado
+      waveScore = 0.1;
+    } else if (h < min || h > max) {
+      waveScore = 0.3;
     } else if (h >= sweetMin && h <= sweetMax) {
-      score += 2;
+      waveScore = 0.95;
     } else {
-      score += 1;
+      waveScore = 0.7;
     }
   }
 
-  // Direção de swell
-  if (swellDirection != null) {
+  // 2) Vento – intensidade + direção (25%)
+  if (windSpeed != null || windDirection != null) {
+    let intenScore = 0.5;
+    if (windSpeed != null) {
+      const w = windSpeed;
+      const maxIdeal = cfg.idealWindSpeed.max;
+      if (w <= maxIdeal) intenScore = 0.9;
+      else if (w <= maxIdeal + 4) intenScore = 0.6;
+      else intenScore = 0.2;
+    }
+
+    let dirScore = 0.5;
+    if (windDirection != null && cfg.beachOrientation != null) {
+      const offshoreDir = (cfg.beachOrientation + 180) % 360;
+      const onshoreDir = cfg.beachOrientation;
+      const diffOff = angleDiff(windDirection, offshoreDir);
+      const diffOn = angleDiff(windDirection, onshoreDir);
+
+      // melhor quanto mais próximo do offshore, pior quanto mais onshore
+      if (diffOff != null && diffOn != null) {
+        if (diffOff <= 20) dirScore = 0.95; // terral perfeito
+        else if (diffOff <= 45) dirScore = 0.8; // quase terral / side-off
+        else if (diffOn <= 30) dirScore = 0.15; // bem onshore
+        else dirScore = 0.55; // side-shore / neutro
+      }
+
+      // se houver faixa de vento offshore explícita, reforça o score
+      if (cfg.idealOffshoreWindDir) {
+        const diffIdealOff = normalizeDegreeDifference(
+          cfg.idealOffshoreWindDir,
+          windDirection
+        );
+        if (diffIdealOff === 0) dirScore = 0.98;
+        else if (diffIdealOff <= 20) dirScore = Math.max(dirScore, 0.9);
+      }
+    }
+
+    windScore = 0.6 * intenScore + 0.4 * dirScore;
+  }
+
+  // 3) Direção do swell – alinhamento com o pico (20%)
+  if (swellDirection != null && cfg.idealSwellDir) {
     const diff = normalizeDegreeDifference(cfg.idealSwellDir, swellDirection);
     if (diff === 0) {
-      score += 2;
-    } else if (diff <= 30) {
-      score += 1;
-    } else if (diff >= 60) {
-      score -= 1.5;
+      swellDirScore = 0.95;
+    } else if (diff <= 20) {
+      swellDirScore = 0.85;
+    } else if (diff <= 45) {
+      swellDirScore = 0.6;
+    } else if (diff <= 70) {
+      swellDirScore = 0.35;
     } else {
-      score -= 0.5;
+      swellDirScore = 0.15;
     }
   }
 
-  // Período de swell (quanto maior, melhor, até certo ponto)
+  // 4) Período do swell – energia (10%)
   if (swellPeriod != null) {
     const p = swellPeriod;
     const { min, sweet } = cfg.idealPeriod;
-    if (p >= sweet) {
-      score += 1.5;
+    if (p >= sweet + 2) {
+      periodScore = 0.95;
+    } else if (p >= sweet) {
+      periodScore = 0.85;
     } else if (p >= min) {
-      score += 0.5;
+      periodScore = 0.6;
+    } else if (p >= min - 2) {
+      periodScore = 0.35;
     } else {
-      score -= 1;
+      periodScore = 0.15;
     }
   }
 
-  // Vento (apenas intensidade por enquanto)
-  if (windSpeed != null) {
-    const w = windSpeed;
-    const maxIdeal = cfg.idealWindSpeed.max;
-    if (w <= maxIdeal) {
-      score += 1.5;
-    } else if (w <= maxIdeal + 4) {
-      score -= 0.5;
-    } else {
-      score -= 1.5;
-    }
+  // 5) Maré / fallback – 10%
+  // Sem dados de maré reais ainda: usamos uma leitura simples de "funciona melhor"
+  if (waveHeight != null) {
+    const h = waveHeight;
+    if (h >= 0.7 && h <= 1.8) tideScore = 0.7;
+    else if (h >= 0.5 && h <= 2.2) tideScore = 0.55;
+    else tideScore = 0.4;
   }
 
-  const clamped = Math.min(10, Math.max(1, score));
-  const numeric = Number(clamped.toFixed(1));
+  // Combinação ponderada:
+  // onda 35%, vento 25%, direção swell 20%, período 10%, maré/fallback 10%
+  const combined =
+    0.35 * waveScore +
+    0.25 * windScore +
+    0.2 * swellDirScore +
+    0.1 * periodScore +
+    0.1 * tideScore;
+
+  // Converter para escala 1–10, penalizando extremos para evitar muitos 10/10
+  let base = combined; // [0,1]
+
+  // Suaviza distribuição para que 10 seja realmente raro
+  base = Math.pow(base, 1.1);
+
+  let finalScore = 1 + 9 * base; // [1,10]
+
+  // Só permitir 10 quando realmente tudo está perfeito
+  if (finalScore > 9.6 && !(waveScore > 0.9 && windScore > 0.9 && swellDirScore > 0.9)) {
+    finalScore = 9.6;
+  }
+
+  const numeric = Number(Math.min(10, Math.max(1, finalScore)).toFixed(1));
   const label = labelFromScore(numeric);
   const tier = tierFromScore(numeric);
-  return { score: numeric, label, tier };
+  const colorVariant =
+    tier === "excelente"
+      ? "green"
+      : tier === "muito-bom"
+      ? "blue"
+      : tier === "surfavel"
+      ? "gray"
+      : tier === "fraco"
+      ? "amber"
+      : "red";
+
+  return { score: numeric, label, tier, colorVariant };
 }
 
 function formatWaveHeight(meters) {
