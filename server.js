@@ -19,6 +19,11 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+// Páginas individuais de pico -> /public/surf/index.html (SPA de picos)
+app.get("/surf/:slug", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "surf", "index.html"));
+});
+
 // Rota de API /api/surf delegando para o handler já existente
 app.get("/api/surf", async (req, res) => {
   try {

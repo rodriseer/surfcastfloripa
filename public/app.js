@@ -1,6 +1,7 @@
 const spots = [
   {
     id: "joaquina",
+    slug: "joaquina",
     name: "Joaquina",
     lat: -27.6286,
     lng: -48.4528,
@@ -9,6 +10,7 @@ const spots = [
   },
   {
     id: "mole",
+    slug: "praia-mole",
     name: "Praia Mole",
     lat: -27.6053,
     lng: -48.4322,
@@ -17,6 +19,7 @@ const spots = [
   },
   {
     id: "campeche",
+    slug: "campeche",
     name: "Campeche",
     lat: -27.65,
     lng: -48.48,
@@ -25,6 +28,7 @@ const spots = [
   },
   {
     id: "barra",
+    slug: "barra-da-lagoa",
     name: "Barra da Lagoa",
     lat: -27.5764,
     lng: -48.4281,
@@ -33,6 +37,7 @@ const spots = [
   },
   {
     id: "mocambique",
+    slug: "mocambique",
     name: "Moçambique",
     lat: -27.5614,
     lng: -48.4175,
@@ -41,6 +46,7 @@ const spots = [
   },
   {
     id: "brava",
+    slug: "praia-brava",
     name: "Praia Brava",
     lat: -27.35,
     lng: -48.4333,
@@ -49,6 +55,7 @@ const spots = [
   },
   {
     id: "ingleses",
+    slug: "ingleses",
     name: "Ingleses",
     lat: -27.435,
     lng: -48.3961,
@@ -736,6 +743,9 @@ function renderSpots(results) {
         <button class="spot-details-toggle" type="button">
           Ver detalhes do pico
         </button>
+        <a class="spot-full-link" href="/surf/${entry.spot.slug}">
+          Ver previsão completa
+        </a>
         <div class="spot-details" hidden>
           <p class="spot-details-tip">${
             entry.spot.tip ??

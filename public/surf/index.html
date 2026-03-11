@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SurfSeer Floripa - Pico</title>
+    <meta
+      name="description"
+      content="Previsão detalhada de surf por pico em Florianópolis com SurfSeer Floripa."
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="page">
+      <header class="site-header">
+        <div class="container header-inner">
+          <div class="brand">
+            <div class="brand-mark">S</div>
+            <div class="brand-text">
+              <span class="brand-name">SurfSeer</span>
+              <span class="brand-sub">Floripa</span>
+            </div>
+          </div>
+          <nav class="nav">
+            <a href="/" class="nav-link">Início</a>
+            <a href="/#picos" class="nav-link">Picos</a>
+          </nav>
+          <a href="/" class="nav-cta">Voltar para home</a>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="hero-bg" id="spot-hero-bg"></div>
+          <div class="hero-overlay"></div>
+          <div class="container hero-inner">
+            <div class="hero-content">
+              <p class="hero-kicker">Previsão detalhada por pico</p>
+              <h1 class="hero-title" id="spot-name">Pico</h1>
+              <p class="hero-subtitle" id="spot-description">
+                Carregando descrição do pico e condições ideais...
+              </p>
+              <div class="hero-actions">
+                <button class="btn btn-primary" data-scroll-target="#timeline">
+                  Ver linha do tempo
+                </button>
+                <button class="btn btn-ghost" data-scroll-target="#proximos-dias">
+                  Próximos 3 dias
+                </button>
+              </div>
+              <div class="hero-metas" id="spot-hero-metas">
+                <!-- preenchido via JS -->
+              </div>
+            </div>
+            <aside class="hero-panel" aria-label="Resumo rápido do pico">
+              <div class="glass-panel hero-panel-inner" id="spot-hero-panel">
+                <!-- preenchido via JS -->
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="condicoes-agora" class="section section-today">
+          <div class="container">
+            <header class="section-header">
+              <h2>Condições agora</h2>
+              <p id="spot-now-summary">
+                Lendo condições atuais de ondas, vento, swell e temperatura da água para este pico.
+              </p>
+            </header>
+            <div class="today-grid">
+              <div class="glass-panel today-main">
+                <h3>Leitura rápida</h3>
+                <dl class="today-metrics" id="spot-now-metrics"></dl>
+              </div>
+              <div class="glass-panel today-secondary">
+                <h3>Melhor horário hoje</h3>
+                <p id="spot-best-window-text">
+                  Identificando a janela com melhor combinação de score, vento e swell ao longo do dia.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="timeline" class="section section-spots">
+          <div class="container">
+            <header class="section-header">
+              <h2>Linha do tempo de hoje</h2>
+              <p>
+                Score de surf, altura das ondas e vento em blocos de 3 horas, para você escolher o
+                melhor horário.
+              </p>
+            </header>
+            <div class="glass-panel spot-timeline-panel">
+              <div class="spot-timeline-row" id="spot-timeline-detailed">
+                <!-- preenchido via JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="proximos-dias" class="section section-best">
+          <div class="container">
+            <header class="section-header">
+              <h2>Próximos 3 dias</h2>
+              <p>
+                Visão agregada por dia com score médio, melhor janela e um resumo rápido das
+                condições previstas.
+              </p>
+            </header>
+            <div class="spots-grid" id="spot-multi-day">
+              <!-- preenchido via JS -->
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <div class="container footer-inner">
+          <div class="footer-brand">
+            <span class="footer-logo">SurfSeer Floripa</span>
+            <span class="footer-tagline">Previsão de surf feita para a ilha.</span>
+          </div>
+          <nav class="footer-nav">
+            <a href="/">Voltar para home</a>
+            <a href="/#picos">Picos monitorados</a>
+          </nav>
+          <div class="footer-meta">
+            <span>Protótipo de experiência de previsão premium, por pico.</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="module" src="/spot-page.js"></script>
+  </body>
+</html>
+

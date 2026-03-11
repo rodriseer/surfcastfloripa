@@ -36,6 +36,24 @@ module.exports = async (req, res) => {
   url.searchParams.set("lng", String(lng));
   url.searchParams.set("params", params);
   url.searchParams.set("source", "noaa");
+  const now = new Date();
+  const start = new Date(now.getTime() - 1 * 60 * 60 * 1000); // ligeiro passado
+  const end = new Date(now.getTime() + 72 * 60 * 60 * 1000); // ~3 dias
+  url.searchParams.set("start", start.toISOString());
+  url.searchParams.set("end", end.toISOString());
+
+  // cache simples em memória para reduzir chamadas à Stormglass
+  const cacheKey = `${lat},${lng}`;
+  const CACHE_TTL_MS = 10 * 60 * 1000;
+  if (!global.__surfseerCache) {
+    global.__surfseerCache = {};
+  }
+  const cache = global.__surfseerCache;
+  const cached = cache[cacheKey];
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    res.status(200).json(cached.payload);
+    return;
+  }
 
   try {
     const response = await fetch(url.toString(), {
@@ -78,8 +96,19 @@ module.exports = async (req, res) => {
       waterTemperature: first.waterTemperature?.noaa ?? null,
       swellDirection: first.swellDirection?.noaa ?? null,
       swellPeriod: first.swellPeriod?.noaa ?? null,
+      hours: hours.map((h) => ({
+        time: h.time,
+        waveHeight: h.waveHeight?.noaa ?? null,
+        windSpeed: h.windSpeed?.noaa ?? null,
+        windDirection: h.windDirection?.noaa ?? null,
+        waterTemperature: h.waterTemperature?.noaa ?? null,
+        swellDirection: h.swellDirection?.noaa ?? null,
+        swellPeriod: h.swellPeriod?.noaa ?? null,
+      })),
       timeline,
     };
+
+    cache[cacheKey] = { timestamp: Date.now(), payload };
 
     res.status(200).json(payload);
   } catch (error) {
