@@ -160,7 +160,7 @@ body {
 .hero-bg {
   position: absolute;
   inset: 0;
-  background-image: url("./public/random 1.jpeg");
+  background-image: url("/random-1.jpeg");
   background-size: cover;
   background-position: center 45%;
   transform: scale(1.02);
@@ -523,7 +523,6 @@ body {
   inset: 0;
   background-size: cover;
   background-position: center;
-  opacity: 0.35;
 }
 
 .spot-overlay {
@@ -584,26 +583,51 @@ body {
 .spot-score-pill {
   align-self: start;
   justify-self: flex-end;
-  padding: 0.2rem 0.65rem;
+  padding: 0.35rem 0.8rem;
   border-radius: 999px;
-  font-size: 0.76rem;
   display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  background: var(--accent-soft);
-  color: #bbf7d0;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.96), #020617);
+  color: #e5e7eb;
 }
 
-.spot-score-pill.bad {
-  background: rgba(239, 68, 68, 0.23);
-  color: #fecaca;
+.spot-score-main {
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
-.spot-score-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: currentColor;
+.spot-score-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--text-subtle);
+}
+
+.spot-score-pill.score-excelente {
+  border-color: rgba(34, 197, 94, 0.7);
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.25), 0 18px 35px rgba(22, 163, 74, 0.45);
+}
+
+.spot-score-pill.score-muito-bom {
+  border-color: rgba(56, 189, 248, 0.7);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.25), 0 16px 30px rgba(37, 99, 235, 0.4);
+}
+
+.spot-score-pill.score-surfavel {
+  border-color: rgba(148, 163, 184, 0.7);
+}
+
+.spot-score-pill.score-fraco {
+  border-color: rgba(234, 179, 8, 0.6);
+  box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.15);
+}
+
+.spot-score-pill.score-ruim {
+  border-color: rgba(248, 113, 113, 0.8);
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.25);
 }
 
 .spot-footer {

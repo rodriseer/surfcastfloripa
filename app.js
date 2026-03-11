@@ -4,7 +4,7 @@ const spots = [
     name: "Joaquina",
     lat: -27.6286,
     lng: -48.4528,
-    image: "./public/random 2.jpeg",
+    image: "/random-2.jpeg",
     orientation: "Leste / Sudeste",
   },
   {
@@ -12,7 +12,7 @@ const spots = [
     name: "Praia Mole",
     lat: -27.6053,
     lng: -48.4322,
-    image: "./public/random 3.jpeg",
+    image: "/random-3.jpeg",
     orientation: "Leste",
   },
   {
@@ -20,7 +20,7 @@ const spots = [
     name: "Campeche",
     lat: -27.65,
     lng: -48.48,
-    image: "./public/random 4.jpeg",
+    image: "/random-4.jpeg",
     orientation: "Leste / Sudeste",
   },
   {
@@ -28,7 +28,7 @@ const spots = [
     name: "Barra da Lagoa",
     lat: -27.5764,
     lng: -48.4281,
-    image: "./public/random 2.jpeg",
+    image: "/random-2.jpeg",
     orientation: "Leste",
   },
   {
@@ -36,7 +36,7 @@ const spots = [
     name: "Moçambique",
     lat: -27.5614,
     lng: -48.4175,
-    image: "./public/random 3.jpeg",
+    image: "/random-3.jpeg",
     orientation: "Leste / Nordeste",
   },
   {
@@ -44,7 +44,7 @@ const spots = [
     name: "Praia Brava",
     lat: -27.35,
     lng: -48.4333,
-    image: "./public/random 1.jpeg",
+    image: "/random-1.jpeg",
     orientation: "Leste / Nordeste",
   },
   {
@@ -52,7 +52,7 @@ const spots = [
     name: "Ingleses",
     lat: -27.435,
     lng: -48.3961,
-    image: "./public/random 4.jpeg",
+    image: "/random-4.jpeg",
     orientation: "Leste / Nordeste",
   },
 ];
@@ -75,19 +75,159 @@ document.querySelectorAll("[data-scroll-target]").forEach((btn) => {
   });
 });
 
-function scoreFromConditions({ waveHeight, windSpeed }) {
-  if (waveHeight == null || windSpeed == null) return { label: "Lendo...", variant: "bad" };
+const spotConfigs = {
+  joaquina: {
+    id: "joaquina",
+    idealWave: { min: 0.6, max: 2.2, sweetMin: 0.9, sweetMax: 1.8 },
+    idealSwellDir: { min: 80, max: 150 },
+    idealWindSpeed: { max: 9 },
+    idealPeriod: { min: 9, sweet: 12 },
+  },
+  mole: {
+    id: "mole",
+    idealWave: { min: 0.6, max: 2.0, sweetMin: 0.8, sweetMax: 1.6 },
+    idealSwellDir: { min: 80, max: 140 },
+    idealWindSpeed: { max: 10 },
+    idealPeriod: { min: 9, sweet: 11 },
+  },
+  campeche: {
+    id: "campeche",
+    idealWave: { min: 0.8, max: 2.5, sweetMin: 1.0, sweetMax: 2.0 },
+    idealSwellDir: { min: 90, max: 160 },
+    idealWindSpeed: { max: 10 },
+    idealPeriod: { min: 9, sweet: 12 },
+  },
+  barra: {
+    id: "barra",
+    idealWave: { min: 0.5, max: 1.8, sweetMin: 0.7, sweetMax: 1.4 },
+    idealSwellDir: { min: 70, max: 130 },
+    idealWindSpeed: { max: 9 },
+    idealPeriod: { min: 8, sweet: 10 },
+  },
+  mocambique: {
+    id: "mocambique",
+    idealWave: { min: 0.8, max: 2.5, sweetMin: 1.1, sweetMax: 2.1 },
+    idealSwellDir: { min: 60, max: 130 },
+    idealWindSpeed: { max: 11 },
+    idealPeriod: { min: 9, sweet: 12 },
+  },
+  brava: {
+    id: "brava",
+    idealWave: { min: 0.8, max: 2.4, sweetMin: 1.0, sweetMax: 1.9 },
+    idealSwellDir: { min: 40, max: 120 },
+    idealWindSpeed: { max: 10 },
+    idealPeriod: { min: 9, sweet: 12 },
+  },
+  ingleses: {
+    id: "ingleses",
+    idealWave: { min: 0.6, max: 2.0, sweetMin: 0.8, sweetMax: 1.6 },
+    idealSwellDir: { min: 40, max: 110 },
+    idealWindSpeed: { max: 10 },
+    idealPeriod: { min: 8, sweet: 11 },
+  },
+};
 
-  const height = waveHeight;
-  const wind = windSpeed;
+function normalizeDegreeDifference(targetRange, actual) {
+  if (actual == null) return null;
+  const normalize = (deg) => {
+    let d = deg % 360;
+    if (d < 0) d += 360;
+    return d;
+  };
+  const a = normalize(actual);
+  const min = normalize(targetRange.min);
+  const max = normalize(targetRange.max);
+  if (min <= max) {
+    if (a >= min && a <= max) return 0;
+    const dist = Math.min(Math.abs(a - min), Math.abs(a - max));
+    return dist;
+  }
+  // range cruza 360 (ex: 300–60)
+  if (a >= min || a <= max) return 0;
+  const dist = Math.min(Math.abs(a - min), Math.abs(a - max));
+  return dist;
+}
 
-  if (height >= 0.8 && height <= 1.6 && wind <= 8) {
-    return { label: "Bom para surf", variant: "good" };
+function labelFromScore(score) {
+  if (score >= 9) return "Excelente";
+  if (score >= 7) return "Muito bom";
+  if (score >= 5) return "Surfável";
+  if (score >= 3) return "Fraco";
+  return "Ruim";
+}
+
+function tierFromScore(score) {
+  if (score >= 9) return "excelente";
+  if (score >= 7) return "muito-bom";
+  if (score >= 5) return "surfavel";
+  if (score >= 3) return "fraco";
+  return "ruim";
+}
+
+function computeSurfScore(spot, conditions) {
+  const cfg = spotConfigs[spot.id] || spotConfigs.joaquina;
+  let score = 5; // ponto neutro
+
+  const { waveHeight, windSpeed, swellDirection, swellPeriod } = conditions;
+
+  // Altura de onda
+  if (waveHeight != null) {
+    const h = waveHeight;
+    const { min, max, sweetMin, sweetMax } = cfg.idealWave;
+    if (h < min || h > max) {
+      score -= 2;
+    } else if (h >= sweetMin && h <= sweetMax) {
+      score += 2;
+    } else {
+      score += 1;
+    }
   }
-  if (height > 0.4 && height <= 2 && wind <= 12) {
-    return { label: "Ok, com ressalvas", variant: "good" };
+
+  // Direção de swell
+  if (swellDirection != null) {
+    const diff = normalizeDegreeDifference(cfg.idealSwellDir, swellDirection);
+    if (diff === 0) {
+      score += 2;
+    } else if (diff <= 30) {
+      score += 1;
+    } else if (diff >= 60) {
+      score -= 1.5;
+    } else {
+      score -= 0.5;
+    }
   }
-  return { label: "Fraco ou bagunçado", variant: "bad" };
+
+  // Período de swell (quanto maior, melhor, até certo ponto)
+  if (swellPeriod != null) {
+    const p = swellPeriod;
+    const { min, sweet } = cfg.idealPeriod;
+    if (p >= sweet) {
+      score += 1.5;
+    } else if (p >= min) {
+      score += 0.5;
+    } else {
+      score -= 1;
+    }
+  }
+
+  // Vento (apenas intensidade por enquanto)
+  if (windSpeed != null) {
+    const w = windSpeed;
+    const maxIdeal = cfg.idealWindSpeed.max;
+    if (w <= maxIdeal) {
+      score += 1.5;
+    } else if (w <= maxIdeal + 4) {
+      score -= 0.5;
+    } else {
+      score -= 1.5;
+    }
+  }
+
+  const clamped = Math.min(10, Math.max(1, score));
+  const numeric = Number(clamped.toFixed(1));
+  const label = labelFromScore(numeric);
+  const tier = tierFromScore(numeric);
+  return { score: numeric, label, tier };
 }
 
 function formatWaveHeight(meters) {
@@ -116,12 +256,22 @@ function bestTimeFromWind(speed) {
   return "Janelas curtas, fique de olho";
 }
 
-function surfConditionText(score) {
-  if (!score) return "Aguardando leitura das condições...";
-  if (score.variant === "good") {
-    return "Boas chances de ondas alinhadas e com parede em alguns momentos do dia.";
+function surfConditionText(rating) {
+  if (!rating) return "Aguardando leitura das condições...";
+  const s = rating.score;
+  if (s >= 9) {
+    return "Condições clássicas para a maioria dos níveis, com ondas bem formadas e alinhadas.";
   }
-  return "Condições mais irregulares, mar mexido ou muito pequeno.";
+  if (s >= 7) {
+    return "Muito boas chances de boas sessões, com períodos do dia bem aproveitáveis.";
+  }
+  if (s >= 5) {
+    return "Surfável, com algumas séries aproveitáveis, mas com fatores limitando um pouco a qualidade.";
+  }
+  if (s >= 3) {
+    return "Condições mais fracas, seja por mar pequeno, vento ou swell desajustado.";
+  }
+  return "Pouco convidativo, indicado apenas para treinos específicos ou para matar a vontade.";
 }
 
 async function fetchSpotConditions(spot) {
@@ -143,6 +293,8 @@ async function fetchSpotConditions(spot) {
       windSpeed: data.windSpeed ?? null,
       windDirection: data.windDirection ?? null,
       waterTemperature: data.waterTemperature ?? null,
+      swellDirection: data.swellDirection ?? null,
+      swellPeriod: data.swellPeriod ?? null,
       tide: "Dados de maré em breve",
     };
   } catch (err) {
@@ -157,6 +309,8 @@ async function fetchSpotConditions(spot) {
       windSpeed: 6 + 4 * Math.random(),
       windDirection: 90,
       waterTemperature: 23 + Math.random() * 2,
+      swellDirection: 100,
+      swellPeriod: 10 + Math.random() * 2,
       tide: "Meia maré enchendo",
     };
   }
@@ -222,11 +376,11 @@ function renderTodayOverview(results) {
 
   heroSummary.innerHTML = "";
   const keySpot = results[0];
-  const keyScore = scoreFromConditions(keySpot);
+  const keyRating = computeSurfScore(keySpot.spot, keySpot);
   [
     {
       label: "Condição geral",
-      value: keyScore.label,
+      value: `${keyRating.score.toFixed(1)} / 10 · ${keyRating.label}`,
     },
     {
       label: "Altura média",
@@ -251,7 +405,7 @@ function renderSpots(results) {
   spotsGrid.innerHTML = "";
 
   results.forEach((entry) => {
-    const score = scoreFromConditions(entry);
+    const rating = computeSurfScore(entry.spot, entry);
     const el = document.createElement("article");
     el.className = "spot-card";
     el.innerHTML = `
@@ -263,9 +417,9 @@ function renderSpots(results) {
             <h3 class="spot-name">${entry.spot.name}</h3>
             <span class="spot-badge">${entry.spot.orientation}</span>
           </div>
-          <div class="spot-score-pill ${score.variant === "bad" ? "bad" : ""}">
-            <span class="spot-score-dot"></span>
-            <span>${score.label}</span>
+          <div class="spot-score-pill score-${rating.tier}">
+            <div class="spot-score-main">${rating.score.toFixed(1)} / 10</div>
+            <div class="spot-score-label">${rating.label}</div>
           </div>
         </header>
         <div class="spot-grid">
@@ -290,7 +444,7 @@ function renderSpots(results) {
           </div>
         </div>
         <p class="spot-footer">
-          ${surfConditionText(score)}
+          ${surfConditionText(rating)}
         </p>
       </div>
     `;

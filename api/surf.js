@@ -28,6 +28,7 @@ module.exports = async (req, res) => {
     "windDirection",
     "waterTemperature",
     "swellDirection",
+    "swellPeriod",
   ].join(",");
 
   const url = new URL(STORMGLASS_ENDPOINT);
@@ -60,6 +61,8 @@ module.exports = async (req, res) => {
       windSpeed: first.windSpeed?.noaa ?? null,
       windDirection: first.windDirection?.noaa ?? null,
       waterTemperature: first.waterTemperature?.noaa ?? null,
+      swellDirection: first.swellDirection?.noaa ?? null,
+      swellPeriod: first.swellPeriod?.noaa ?? null,
     };
 
     res.status(200).json(payload);
