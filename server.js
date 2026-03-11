@@ -11,15 +11,12 @@ const surfHandler = require("./api/surf");
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Servir arquivos estáticos (index.html, app.js, styles.css, etc.)
-app.use(express.static(__dirname));
-
-// Servir assets públicos de /public na raiz, ex: /random-1.jpeg
+// Servir arquivos estáticos a partir de /public
 app.use(express.static(path.join(__dirname, "public")));
 
-// Rota raiz -> index.html
+// Rota raiz -> /public/index.html
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // Rota de API /api/surf delegando para o handler já existente

@@ -4,7 +4,7 @@ const spots = [
     name: "Joaquina",
     lat: -27.6286,
     lng: -48.4528,
-    image: "/public/random-2.jpeg",
+    image: "/random-2.jpeg",
     orientation: "Leste / Sudeste",
   },
   {
@@ -12,7 +12,7 @@ const spots = [
     name: "Praia Mole",
     lat: -27.6053,
     lng: -48.4322,
-    image: "/public/random-3.jpeg",
+    image: "/random-3.jpeg",
     orientation: "Leste",
   },
   {
@@ -20,7 +20,7 @@ const spots = [
     name: "Campeche",
     lat: -27.65,
     lng: -48.48,
-    image: "/public/random-4.jpeg",
+    image: "/random-4.jpeg",
     orientation: "Leste / Sudeste",
   },
   {
@@ -28,7 +28,7 @@ const spots = [
     name: "Barra da Lagoa",
     lat: -27.5764,
     lng: -48.4281,
-    image: "/public/random-2.jpeg",
+    image: "/random-2.jpeg",
     orientation: "Leste",
   },
   {
@@ -36,7 +36,7 @@ const spots = [
     name: "Moçambique",
     lat: -27.5614,
     lng: -48.4175,
-    image: "/public/random-3.jpeg",
+    image: "/random-3.jpeg",
     orientation: "Leste / Nordeste",
   },
   {
@@ -44,7 +44,7 @@ const spots = [
     name: "Praia Brava",
     lat: -27.35,
     lng: -48.4333,
-    image: "/public/random-1.jpeg",
+    image: "/random-1.jpeg",
     orientation: "Leste / Nordeste",
   },
   {
@@ -52,7 +52,7 @@ const spots = [
     name: "Ingleses",
     lat: -27.435,
     lng: -48.3961,
-    image: "/public/random-4.jpeg",
+    image: "/random-4.jpeg",
     orientation: "Leste / Nordeste",
   },
 ];
