@@ -85,6 +85,7 @@ const spotConfigs = {
     idealOffshoreWindDir: { min: 250, max: 310 }, // W / WNW
     idealWindSpeed: { max: 9 },
     idealPeriod: { min: 9, sweet: 12 },
+    tip: "Joaquina funciona melhor com swell de sudeste/este-sudeste e vento terral de oeste.",
   },
   mole: {
     id: "mole",
@@ -94,6 +95,7 @@ const spotConfigs = {
     idealOffshoreWindDir: { min: 260, max: 320 }, // W / WNW
     idealWindSpeed: { max: 10 },
     idealPeriod: { min: 9, sweet: 11 },
+    tip: "Praia Mole costuma alinhar bem com swell de leste e sudeste, com vento mais fraco ou terral.",
   },
   campeche: {
     id: "campeche",
@@ -103,6 +105,7 @@ const spotConfigs = {
     idealOffshoreWindDir: { min: 260, max: 320 },
     idealWindSpeed: { max: 10 },
     idealPeriod: { min: 9, sweet: 12 },
+    tip: "Campeche prefere swell de sudeste com boa energia e vento de oeste/noroeste.",
   },
   barra: {
     id: "barra",
@@ -112,6 +115,7 @@ const spotConfigs = {
     idealOffshoreWindDir: { min: 250, max: 310 },
     idealWindSpeed: { max: 9 },
     idealPeriod: { min: 8, sweet: 10 },
+    tip: "Barra da Lagoa funciona bem com swell de leste e vento fraco, ideal para sessões mais tranquilas.",
   },
   mocambique: {
     id: "mocambique",
@@ -121,6 +125,7 @@ const spotConfigs = {
     idealOffshoreWindDir: { min: 240, max: 300 },
     idealWindSpeed: { max: 11 },
     idealPeriod: { min: 9, sweet: 12 },
+    tip: "Moçambique aceita bastante tamanho com swell de nordeste/leste e vento mais organizado.",
   },
   brava: {
     id: "brava",
@@ -130,6 +135,7 @@ const spotConfigs = {
     idealOffshoreWindDir: { min: 230, max: 290 },
     idealWindSpeed: { max: 10 },
     idealPeriod: { min: 9, sweet: 12 },
+    tip: "Praia Brava costuma funcionar bem com swell de nordeste/leste e vento terral mais fraco.",
   },
   ingleses: {
     id: "ingleses",
@@ -139,6 +145,7 @@ const spotConfigs = {
     idealOffshoreWindDir: { min: 230, max: 290 },
     idealWindSpeed: { max: 10 },
     idealPeriod: { min: 8, sweet: 11 },
+    tip: "Ingleses responde melhor a swell de nordeste/leste, sendo opção boa quando o sul/sudeste passa reto.",
   },
 };
 
@@ -341,6 +348,18 @@ function computeSurfScore(spot, conditions) {
   return { score: numeric, label, tier, colorVariant };
 }
 
+function computeTrend(timelineWithScores, currentRating) {
+  if (!timelineWithScores.length) {
+    return { icon: "→", label: "Estável", variant: "neutral" };
+  }
+  const first = timelineWithScores[0].rating;
+  const last = timelineWithScores[timelineWithScores.length - 1].rating;
+  const delta = last.score - first.score;
+  if (delta > 0.6) return { icon: "↑", label: "Melhorando", variant: "up" };
+  if (delta < -0.6) return { icon: "↓", label: "Piorando", variant: "down" };
+  return { icon: "→", label: "Estável", variant: "neutral" };
+}
+
 function formatWaveHeight(meters) {
   if (meters == null) return "—";
   return `${meters.toFixed(1)} m`;
@@ -461,6 +480,26 @@ function renderBestSpot(results) {
       </div>
     </div>
   `;
+}
+
+function computeConfidenceLabel(entry, timelineWithScores) {
+  const hasTimeline = Array.isArray(timelineWithScores) && timelineWithScores.length >= 3;
+  const hasCoreData =
+    entry.waveHeight != null &&
+    entry.windSpeed != null &&
+    entry.swellDirection != null &&
+    entry.swellPeriod != null;
+
+  if (!hasTimeline || !hasCoreData) return "média";
+
+  const scores = timelineWithScores.map((s) => s.rating.score);
+  const min = Math.min(...scores);
+  const max = Math.max(...scores);
+  const range = max - min;
+
+  if (range <= 1) return "alta";
+  if (range <= 2) return "média";
+  return "baixa";
 }
 
 async function fetchSpotConditions(spot) {
@@ -623,6 +662,8 @@ function renderSpots(results) {
         bestSlot = slot;
       }
     });
+
+    const trend = computeTrend(timelineWithScores, rating);
     const el = document.createElement("article");
     el.className = "spot-card";
     el.innerHTML = `
@@ -635,7 +676,10 @@ function renderSpots(results) {
             <span class="spot-badge">${entry.spot.orientation}</span>
           </div>
           <div class="spot-score-pill score-${rating.tier}" title="Score calculado a partir de altura de onda, vento, swell, período e orientação do pico.">
-            <div class="spot-score-main">${rating.score.toFixed(1)} / 10</div>
+            <div class="spot-score-main">
+              ${rating.score.toFixed(1)} / 10
+              <span class="spot-score-trend spot-score-trend-${trend.variant}" aria-label="${trend.label}">${trend.icon}</span>
+            </div>
             <div class="spot-score-label">${rating.label}</div>
           </div>
         </header>
@@ -689,12 +733,39 @@ function renderSpots(results) {
             }</span>
           </div>
         </div>
-        <p class="spot-footer">
-          ${surfConditionText(rating)}
-        </p>
+        <button class="spot-details-toggle" type="button">
+          Ver detalhes do pico
+        </button>
+        <div class="spot-details" hidden>
+          <p class="spot-details-tip">${
+            entry.spot.tip ??
+            "Use o score e a linha do tempo para entender rapidamente como o pico reage hoje."
+          }</p>
+          <p class="spot-details-confidence">
+            Confiança da previsão: <strong>${computeConfidenceLabel(
+              entry,
+              timelineWithScores
+            )}</strong>
+          </p>
+        </div>
       </div>
     `;
     spotsGrid.appendChild(el);
+
+    const toggle = el.querySelector(".spot-details-toggle");
+    const details = el.querySelector(".spot-details");
+    if (toggle && details) {
+      toggle.addEventListener("click", () => {
+        const isHidden = details.hasAttribute("hidden");
+        if (isHidden) {
+          details.removeAttribute("hidden");
+          toggle.textContent = "Esconder detalhes";
+        } else {
+          details.setAttribute("hidden", "true");
+          toggle.textContent = "Ver detalhes do pico";
+        }
+      });
+    }
   });
 }
 
