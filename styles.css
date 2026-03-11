@@ -160,7 +160,7 @@ body {
 .hero-bg {
   position: absolute;
   inset: 0;
-  background-image: url("/random-1.jpeg");
+  background-image: url("/public/random-1.jpeg");
   background-size: cover;
   background-position: center 45%;
   transform: scale(1.02);
