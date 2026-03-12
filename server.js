@@ -37,6 +37,6 @@ app.get("/api/surf", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`SurfSeer Floripa rodando em http://localhost:${port}`);
+  console.log(`SurfSeer Santa Catarina rodando em http://localhost:${port}`);
 });
 

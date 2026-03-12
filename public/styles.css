@@ -360,7 +360,7 @@ body {
 }
 
 .section {
-  padding: 3.5rem 0;
+  padding: 4rem 0;
 }
 
 .section-header {
@@ -483,20 +483,29 @@ body {
   background: radial-gradient(circle at top right, rgba(15, 23, 42, 0.96), #020617);
 }
 
-.spots-grid {
+.spots-region {
+  margin-bottom: 2.6rem;
+}
+
+.spots-region-title {
+  font-size: 1.1rem;
+  margin: 0 0 0.8rem;
+}
+
+.spots-region-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1.3rem;
+  gap: 1.6rem;
 }
 
 @media (min-width: 640px) {
-  .spots-grid {
+  .spots-region-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (min-width: 1040px) {
-  .spots-grid {
+  .spots-region-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
@@ -523,19 +532,24 @@ body {
   inset: 0;
   background-size: cover;
   background-position: center;
+  filter: brightness(0.6) saturate(1.05);
 }
 
 .spot-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.96));
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 23, 42, 0.9),
+    rgba(15, 23, 42, 0.98)
+  );
 }
 
 .spot-inner {
   position: relative;
-  padding: 1.1rem 1.1rem 1.1rem;
+  padding: 1.4rem 1.3rem 1.4rem;
   display: grid;
-  gap: 0.7rem;
+  gap: 1rem;
   z-index: 1;
 }
 
@@ -547,7 +561,7 @@ body {
 }
 
 .spot-name {
-  font-size: 1.05rem;
+  font-size: 1.08rem;
   font-weight: 600;
 }
 
@@ -595,7 +609,7 @@ body {
 }
 
 .spot-score-main {
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -604,6 +618,34 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.16em;
   color: var(--text-subtle);
+}
+
+.spot-core {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 0.86rem;
+}
+
+.spot-core-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.spot-core-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--text-subtle);
+}
+
+.spot-core-value {
+  font-weight: 500;
+}
+
+.spot-core-best-time {
+  display: none;
 }
 
 .spot-score-trend {
@@ -652,39 +694,6 @@ body {
   font-size: 0.8rem;
   color: var(--text-soft);
   margin-top: 0.3rem;
-}
-
-.spot-timeline {
-  margin-top: 0.3rem;
-}
-
-.spot-timeline-label {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--text-subtle);
-  margin-bottom: 0.25rem;
-}
-
-.spot-timeline-row {
-  display: flex;
-  gap: 0.35rem;
-  overflow-x: auto;
-}
-
-.spot-timeline-time {
-  font-size: 0.68rem;
-  color: var(--text-subtle);
-}
-
-.spot-timeline-score {
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.spot-timeline-empty {
-  font-size: 0.78rem;
-  color: var(--text-subtle);
 }
 
 .spot-timeline-panel {

@@ -1,6 +1,7 @@
 const spots = [
   {
     id: "joaquina",
+    region: "Florianópolis",
     slug: "joaquina",
     name: "Joaquina",
     lat: -27.6286,
@@ -10,6 +11,7 @@ const spots = [
   },
   {
     id: "mole",
+    region: "Florianópolis",
     slug: "praia-mole",
     name: "Praia Mole",
     lat: -27.6053,
@@ -19,6 +21,7 @@ const spots = [
   },
   {
     id: "campeche",
+    region: "Florianópolis",
     slug: "campeche",
     name: "Campeche",
     lat: -27.65,
@@ -28,6 +31,7 @@ const spots = [
   },
   {
     id: "barra",
+    region: "Florianópolis",
     slug: "barra-da-lagoa",
     name: "Barra da Lagoa",
     lat: -27.5764,
@@ -37,6 +41,7 @@ const spots = [
   },
   {
     id: "mocambique",
+    region: "Florianópolis",
     slug: "mocambique",
     name: "Moçambique",
     lat: -27.5614,
@@ -46,6 +51,7 @@ const spots = [
   },
   {
     id: "brava",
+    region: "Florianópolis",
     slug: "praia-brava",
     name: "Praia Brava",
     lat: -27.35,
@@ -55,12 +61,63 @@ const spots = [
   },
   {
     id: "ingleses",
+    region: "Florianópolis",
     slug: "ingleses",
     name: "Ingleses",
     lat: -27.435,
     lng: -48.3961,
     image: "/random-4.jpeg",
     orientation: "Leste / Nordeste",
+  },
+  {
+    id: "garopaba",
+    slug: "garopaba",
+    name: "Garopaba",
+    region: "Garopaba / Imbituba",
+    lat: -28.024,
+    lng: -48.61,
+    image: "/random-2.jpeg",
+    orientation: "Leste / Sudeste",
+  },
+  {
+    id: "silveira",
+    slug: "silveira",
+    name: "Silveira",
+    region: "Garopaba / Imbituba",
+    lat: -28.03,
+    lng: -48.62,
+    image: "/random-3.jpeg",
+    orientation: "Leste / Sudeste",
+  },
+  {
+    id: "ferrugem",
+    slug: "ferrugem",
+    name: "Ferrugem",
+    region: "Garopaba / Imbituba",
+    lat: -28.048,
+    lng: -48.63,
+    image: "/random-4.jpeg",
+    orientation: "Leste",
+  },
+  {
+    id: "imbituba",
+    slug: "imbituba",
+    name: "Imbituba",
+    region: "Garopaba / Imbituba",
+    lat: -28.24,
+    lng: -48.66,
+    image: "/random-1.jpeg",
+    orientation: "Leste / Sudeste",
+  },
+  {
+    id: "praia-do-rosa",
+    slug: "praia-do-rosa",
+    name: "Praia do Rosa",
+    region: "Garopaba / Imbituba",
+    lat: -28.12,
+    lng: -48.63,
+    image: "/random-3.jpeg",
+    orientation: "Leste / Sudeste",
   },
 ];
 
@@ -622,7 +679,7 @@ function renderTodayOverview(results) {
   });
 
   todaySummaryText.textContent =
-    "Hoje Floripa apresenta ondas variando ao longo da costa. Em geral, as praias mais expostas ao leste tendem a receber mais swell. Use os cards por pico para afinar a leitura.";
+    "Hoje o litoral de Santa Catarina apresenta ondas variando ao longo da costa. Em geral, as praias mais expostas ao leste tendem a receber mais swell. Use os cards de cada pico para entender melhor as condições.";
 
   heroSummary.innerHTML = "";
   const keySpot = results[0];
@@ -652,35 +709,60 @@ function renderTodayOverview(results) {
 }
 
 function renderSpots(results) {
-  spotsGrid.innerHTML = "";
+  const container = document.getElementById("spots-regions");
+  if (!container) return;
+  container.innerHTML = "";
 
+  const byRegion = {};
   results.forEach((entry) => {
-    const rating = computeSurfScore(entry.spot, entry);
+    const region = entry.spot.region || "Outros picos";
+    if (!byRegion[region]) byRegion[region] = [];
+    byRegion[region].push(entry);
+  });
 
-    const timeline = Array.isArray(entry.timeline) ? entry.timeline : [];
-    const timelineWithScores = timeline.map((slot) => {
-      const slotRating = computeSurfScore(entry.spot, slot);
-      return { ...slot, rating: slotRating };
-    });
+  Object.keys(byRegion).forEach((region) => {
+    const regionBlock = document.createElement("section");
+    regionBlock.className = "spots-region";
+    regionBlock.innerHTML = `
+      <h3 class="spots-region-title">${region}</h3>
+      <div class="spots-region-grid"></div>
+    `;
+    const gridEl = regionBlock.querySelector(".spots-region-grid");
 
-    let bestSlot = null;
-    timelineWithScores.forEach((slot) => {
-      if (!bestSlot || slot.rating.score > bestSlot.rating.score) {
-        bestSlot = slot;
+    byRegion[region].forEach((entry) => {
+      const rating = computeSurfScore(entry.spot, entry);
+
+      const timeline = Array.isArray(entry.timeline) ? entry.timeline : [];
+      const timelineWithScores = timeline.map((slot) => {
+        const slotRating = computeSurfScore(entry.spot, slot);
+        return { ...slot, rating: slotRating };
+      });
+
+      let bestSlot = null;
+      timelineWithScores.forEach((slot) => {
+        if (!bestSlot || slot.rating.score > bestSlot.rating.score) {
+          bestSlot = slot;
+        }
+      });
+
+      const trend = computeTrend(timelineWithScores, rating);
+
+      let bestTimeLabel = "Sem horário definido";
+      if (bestSlot && bestSlot.time) {
+        const d = new Date(bestSlot.time);
+        const h = d.getHours().toString().padStart(2, "0");
+        const endH = (d.getHours() + 3).toString().padStart(2, "0");
+        bestTimeLabel = `${h}h – ${endH}h`;
       }
-    });
-
-    const trend = computeTrend(timelineWithScores, rating);
-    const el = document.createElement("article");
-    el.className = "spot-card";
-    el.innerHTML = `
+      const el = document.createElement("article");
+      el.className = "spot-card";
+      el.innerHTML = `
       <div class="spot-bg" style="background-image:url('${entry.spot.image}')"></div>
       <div class="spot-overlay"></div>
       <div class="spot-inner">
         <header class="spot-header">
           <div>
             <h3 class="spot-name">${entry.spot.name}</h3>
-            <span class="spot-badge">${entry.spot.orientation}</span>
           </div>
           <div class="spot-score-pill score-${rating.tier}" title="Score calculado a partir de altura de onda, vento, swell, período e orientação do pico.">
             <div class="spot-score-main">
@@ -690,92 +772,29 @@ function renderSpots(results) {
             <div class="spot-score-label">${rating.label}</div>
           </div>
         </header>
-        <div class="spot-timeline">
-          <div class="spot-timeline-label">Hoje</div>
-          <div class="spot-timeline-row">
-            ${
-              timelineWithScores.length
-                ? timelineWithScores
-                    .map((slot) => {
-                      const d = new Date(slot.time);
-                      const h = d.getHours().toString().padStart(2, "0");
-                      const isBest =
-                        bestSlot && slot.rating.score === bestSlot.rating.score;
-                      return `
-                        <div class="spot-timeline-slot ${
-                          isBest ? "spot-timeline-slot-best" : ""
-                        }">
-                          <span class="spot-timeline-time">${h}h</span>
-                          <span class="spot-timeline-score">${slot.rating.score.toFixed(
-                            1
-                          )}</span>
-                        </div>
-                      `;
-                    })
-                    .join("")
-                : `<div class="spot-timeline-empty">Linha do tempo em atualização...</div>`
-            }
+        <div class="spot-core">
+          <div class="spot-core-item">
+            <span class="spot-core-label">Ondas</span>
+            <span class="spot-core-value">${formatWaveHeight(entry.waveHeight)}</span>
           </div>
-        </div>
-        <div class="spot-grid">
-          <div>
-            <span class="spot-metric-label">Altura das ondas</span>
-            <span class="spot-metric-value">${formatWaveHeight(entry.waveHeight)}</span>
-          </div>
-          <div>
-            <span class="spot-metric-label">Vento</span>
-            <span class="spot-metric-value">${formatWind(
+          <div class="spot-core-item">
+            <span class="spot-core-label">Vento</span>
+            <span class="spot-core-value">${formatWind(
               entry.windSpeed,
               entry.windDirection
             )}</span>
           </div>
-          <div>
-            <span class="spot-metric-label">Swell</span>
-            <span class="spot-metric-value">${formatSwell(entry)}</span>
+          <div class="spot-core-item">
+            <span class="spot-core-label">Melhor horário</span>
+            <span class="spot-core-value">${bestTimeLabel}</span>
           </div>
-          <div>
-            <span class="spot-metric-label">Maré</span>
-            <span class="spot-metric-value">${
-              entry.tide ?? "Sem dados de maré ainda"
-            }</span>
-          </div>
-        </div>
-        <button class="spot-details-toggle" type="button">
-          Ver detalhes do pico
-        </button>
-        <a class="spot-full-link" href="/surf/${entry.spot.slug}">
-          Ver previsão completa
-        </a>
-        <div class="spot-details" hidden>
-          <p class="spot-details-tip">${
-            entry.spot.tip ??
-            "Use o score e a linha do tempo para entender rapidamente como o pico reage hoje."
-          }</p>
-          <p class="spot-details-confidence">
-            Confiança da previsão: <strong>${computeConfidenceLabel(
-              entry,
-              timelineWithScores
-            )}</strong>
-          </p>
         </div>
       </div>
     `;
-    spotsGrid.appendChild(el);
+      gridEl.appendChild(el);
+    });
 
-    const toggle = el.querySelector(".spot-details-toggle");
-    const details = el.querySelector(".spot-details");
-    if (toggle && details) {
-      toggle.addEventListener("click", () => {
-        const isHidden = details.hasAttribute("hidden");
-        if (isHidden) {
-          details.removeAttribute("hidden");
-          toggle.textContent = "Esconder detalhes";
-        } else {
-          details.setAttribute("hidden", "true");
-          toggle.textContent = "Ver detalhes do pico";
-        }
-      });
-    }
+    container.appendChild(regionBlock);
   });
 }
 
